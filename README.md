@@ -18,7 +18,7 @@ tony@iqr-turtlebot4-121:~$ rviz2
 
 ```bash
 tony@iqr-turtlebot4-121:~$ ros2 run nav2_map_server map_server --ros-args -p yaml_filename:=map.yaml
-``
+```
 
 ```bash
 tony@iqr-turtlebot4-121:~$ ros2 run nav2_util lifecycle_bringup map_server
