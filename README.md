@@ -187,6 +187,9 @@ tony@iqr-turtlebot4-121:~$ ros2 run nav2_util lifecycle_bringup map_server
 [INFO] [1702956104.840330822] [map_server_lifecycle_client_30054474]: Waiting for service map_server/get_state...
 ```
 
+![image](https://github.com/HuaYuXiao/turtlebot2_pickup_and_place/assets/117464811/16008ebc-f038-4634-a5e8-1883e577c0b6)
+
+
 
 
 
