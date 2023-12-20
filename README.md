@@ -4,6 +4,16 @@
 
 ## 基本指令
 
+### 屏幕显示
+
+```bash
+tony@iqr-turtlebot4-121:~$ sudo /etc/NX/nxserver --restart
+```
+
+参考教程：
+
+- https://zhuanlan.zhihu.com/p/519648451
+
 ### 启动接口
 
 ```bash
@@ -38,28 +48,35 @@ tony@iqr-turtlebot4-121:~$ ros2 run nav2_util lifecycle_bringup map_server
 ### 定位导航
 
 Open a terminal and launch `localization`:
+
 ```bash
 tony@iqr-turtlebot4-121:~$ ros2 launch turtlebot4_navigation localization.launch.py map:=map.yaml
 ```
 
 Then, in another terminal, launch `nav2`:
+
 ```bash
 ros2 launch turtlebot4_navigation nav2.launch.py
 ```
 
 In a new terminal launch `Rviz` so that you can view the map and interact with navigation:
+
 ```bash
 ros2 launch turtlebot4_viz view_robot.launch.py
 ```
+
 ![image](https://github.com/HuaYuXiao/tb4_find_pickup_place/assets/117464811/ac469303-28e1-4fce-a1a9-4304e864e7ec)
 
 Click on `2D Pose Estimate`, and then click and drag the arrow on the map to approximate the position and orientation of the robot.
+
 ![image](https://github.com/HuaYuXiao/tb4_find_pickup_place/assets/117464811/ee2ff89b-b51e-4383-aade-bf43532ec90f)
 
 The `Nav2 Goal` tool allows you to set a goal pose for the robot. 
+
 ![image](https://github.com/HuaYuXiao/tb4_find_pickup_place/assets/117464811/34afbcba-49a8-44c0-b1a3-0485682772b7)
 
 参考教程：
+
 - https://turtlebot.github.io/turtlebot4-user-manual/tutorials/navigation.html
 - https://fishros.org.cn/forum/topic/303/ros2-%E5%9F%BA%E7%A1%80-navigation2%E5%AF%BC%E8%88%AA%E7%B3%BB%E7%BB%9F
 
