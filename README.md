@@ -1,6 +1,6 @@
-# turtlebot4: find, pickup and place
+# TurtleBot4: Find, Pickup & Place
 
-
+南方科技大学课程《EE211机器人感知与智能》期末项目
 
 ## 基本指令
 
@@ -12,13 +12,19 @@ tony@iqr-turtlebot4-121:~$ ros2 launch iqr_tb4_bringup bringup.launch.py
 
 ### 加载地图
 
+Open a terminal and launch `rviz2`:
+
 ```bash
 tony@iqr-turtlebot4-121:~$ rviz2
 ```
 
+Then, in another terminal, launch `map_server`:
+
 ```bash
 tony@iqr-turtlebot4-121:~$ ros2 run nav2_map_server map_server --ros-args -p yaml_filename:=map.yaml
 ```
+
+Then, in another terminal, launch :
 
 ```bash
 tony@iqr-turtlebot4-121:~$ ros2 run nav2_util lifecycle_bringup map_server
