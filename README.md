@@ -56,13 +56,13 @@ tony@iqr-turtlebot4-121:~$ ros2 launch turtlebot4_navigation localization.launch
 Then, in another terminal, launch `nav2`:
 
 ```bash
-ros2 launch turtlebot4_navigation nav2.launch.py
+tony@iqr-turtlebot4-121:~$ ros2 launch turtlebot4_navigation nav2.launch.py
 ```
 
 In a new terminal launch `Rviz` so that you can view the map and interact with navigation:
 
 ```bash
-ros2 launch turtlebot4_viz view_robot.launch.py
+tony@iqr-turtlebot4-121:~$ ros2 launch turtlebot4_viz view_robot.launch.py
 ```
 
 ![image](https://github.com/HuaYuXiao/tb4_find_pickup_place/assets/117464811/ac469303-28e1-4fce-a1a9-4304e864e7ec)
