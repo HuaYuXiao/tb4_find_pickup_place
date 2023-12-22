@@ -7,6 +7,10 @@
 ### 屏幕显示
 
 ```bash
+tony@iqr-turtlebot4-121:~$ sudo systemctl stop gdm3
+```
+
+```bash
 tony@iqr-turtlebot4-121:~$ sudo /etc/NX/nxserver --restart
 ```
 
