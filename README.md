@@ -14,6 +14,10 @@ tony@iqr-turtlebot4-121:~$ sudo systemctl stop gdm3
 tony@iqr-turtlebot4-121:~$ sudo /etc/NX/nxserver --restart
 ```
 
+`Ctrl`+`Alt`+`T`
+
+![image](https://github.com/HuaYuXiao/tb4_find_pickup_place/assets/117464811/960671c7-d6c4-4607-a8cf-beb40eb28c71)
+
 参考教程：
 
 - https://zhuanlan.zhihu.com/p/519648451
