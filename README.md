@@ -28,6 +28,12 @@ tony@iqr-turtlebot4-121:~$ sudo /etc/NX/nxserver --restart
 tony@iqr-turtlebot4-121:~$ ros2 launch iqr_tb4_bringup bringup.launch.py
 ```
 
+### 相机识别marker
+
+```bash
+tony@iqr-turtlebot4-121:~$ ros2 launch ros2_aruco aruco_recognition.launch.py
+```
+
 ### 加载地图
 
 Open a terminal and launch `rviz2`:
