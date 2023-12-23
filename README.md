@@ -95,6 +95,13 @@ The `Nav2 Goal` tool allows you to set a goal pose for the robot.
 - https://github.com/turtlebot/turtlebot4_tutorials
 - https://fishros.org.cn/forum/topic/303/ros2-%E5%9F%BA%E7%A1%80-navigation2%E5%AF%BC%E8%88%AA%E7%B3%BB%E7%BB%9F
 
+### 重启底盘
+
+![image](https://github.com/HuaYuXiao/tb4_find_pickup_place/assets/117464811/94fc7bf5-0afc-49b5-aeec-12b42cc0d708)
+
+
+
+
 ## 团队贡献
 
 
