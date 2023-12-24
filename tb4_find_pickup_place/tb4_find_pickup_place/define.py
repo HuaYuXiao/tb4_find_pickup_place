@@ -18,29 +18,33 @@ from tf2_ros.buffer import Buffer
 from geometry_msgs.msg import PoseArray
 from pan_tilt_msgs.msg import PanTiltCmdDeg
 from tf2_ros.transform_listener import TransformListener
+from tf_transformations import quaternion_from_euler
 
 
+qA = quaternion_from_euler(0.0, 0.0, np.deg2rad(-90.0))
+PointA = PoseStamped(
+    header=Header(frame_id='map'),
+    pose=Pose(
+        position=Point(x=0.25, y=-3.3, z=0.0),
+        orientation=Quaternion(x=qA[0], y=qA[1], z=qA[2], w=qA[3])
+    )
+)
+
+qB = quaternion_from_euler(0.0, 0.0, np.deg2rad(0.0))
+PointB = PoseStamped(
+    header=Header(frame_id='map'),
+    pose=Pose(
+        position=Point(x=2.85, y=-3.45, z=0.0),
+        orientation=Quaternion(x=qB[0], y=qB[1], z=qB[2], w=qB[3])
+    )
+)
+
+qS = quaternion_from_euler(0.0, 0.0, np.deg2rad(-90.0))  
 PointS = PoseStamped(
     header=Header(frame_id='map'),
     pose=Pose(
         position=Point(x=0.25, y=-0.3, z=0.0),
-        orientation=Quaternion(x=0.0, y=0.0, z=0.0, w=1.0)
-    )
-)
-
-PointA = PoseStamped(
-    header=Header(frame_id='map'),
-    pose=Pose(
-        position=Point(x=0.2, y=-3.2, z=0.0),
-        orientation=Quaternion(x=0.0, y=0.0, z=0.0, w=1.0)
-    )
-)
-
-PointB = PoseStamped(
-    header=Header(frame_id='map'),
-    pose=Pose(
-        position=Point(x=2.85, y=-3.25, z=0.0),
-        orientation=Quaternion(x=0.0, y=0.0, z=0.0, w=1.0)
+        orientation=Quaternion(x=qS[0], y=qS[1], z=qS[2], w=qS[3])
     )
 )
 
@@ -50,29 +54,27 @@ def nav_thread(navigator, goal_pose):
     # rclpy.spin(navigator)
     navigator.goToPose(goal_pose)
 
-    i = 0
     while not navigator.isTaskComplete():
-        i = i + 1
         feedback = navigator.getFeedback()
         if feedback:
             # Some navigation timeout to demo cancellation
-            if Duration.from_msg(feedback.navigation_time) > Duration(seconds=30.0):
+            if Duration.from_msg(feedback.navigation_time) > Duration(seconds=60.0):
                 navigator.cancelTask()
 
     # Do something depending on the return code
-    resultS = navigator.getResult()
-    if resultS == TaskResult.SUCCEEDED:
+    result = navigator.getResult()
+    if result == TaskResult.SUCCEEDED:
         print('Goal reached')
-    elif resultS == TaskResult.CANCELED:
+    elif result == TaskResult.CANCELED:
         print('Goal was canceled!')
-    elif resultS == TaskResult.FAILED:
+    elif result == TaskResult.FAILED:
         print('Goal failed!')
     else:
         print('Goal has an invalid return status!')
 
 
 class ArmController(Node):
-    def __init__(self, action=True):
+    def __init__(self, action):
         super().__init__("ArmController")
         '''
         action用于判断机械臂行为
@@ -80,19 +82,25 @@ class ArmController(Node):
         False：放下
         '''
         self.action = action
+        print(self.action, action)
 
         self.marker2camera_Matrix = np.eye(4)
         self.camera2base_Matrix = np.eye(4)
         self.marker2base_Matrix = np.eye(4)
-        self.rot_matrix1 = np.array([[1, 0, 0, -0.01],
+        # self.rot_matrix1 = np.array([[1, 0, 0, -0.01],
+        #                              [0, 1, 0, 0],
+        #                              [0, 0, 1, 0],
+        #                              [0, 0, 0, 1]])
+        self.rot_matrix1 = np.array([[0, 0, 1, 0.01],
                                      [0, 1, 0, 0],
-                                     [0, 0, 1, 0],
+                                     [-1, 0, 0, 0.03],
                                      [0, 0, 0, 1]])
         self.rot_matrix2 = np.array([[0, 0, 1, 0],
                                      [-1, 0, 0, 0],
                                      [0, -1, 0, 0],
                                      [0, 0, 0, 1]])
-    
+        self.aruco_update = False
+        
         self.fb_sub = self.create_subscription(JointState, "/joint_states", self.js_cb, 10)
         self.marker_sub = self.create_subscription(PoseArray,"/aruco_poses",self.ar_cb, 10)
         self.tf_buffer = Buffer()
@@ -102,10 +110,10 @@ class ArmController(Node):
         self.group_pub = self.create_publisher(JointGroupCommand, "/px100/commands/joint_group", 10)
         
         # 根据action采取不同的操作
-        if self.action:
-            self.pub_timer = self.create_timer(0.1, self.pickup_cb)
+        if self.action == True:
+            self.pickup_timer = self.create_timer(0.1, self.pickup_cb)
         else:
-            self.pub_timer = self.create_timer(0.1, self.place_cb)
+            self.place_timer = self.create_timer(0.1, self.place_cb)
 
         self.pantil_pub = self.create_publisher(PanTiltCmdDeg,"/pan_tilt_cmd_deg",10)
 
@@ -161,6 +169,8 @@ class ArmController(Node):
 
     # camera2marker matrix
     def ar_cb(self, msg):
+        if not self.aruco_update:
+            return
         # 更新相机与base的转换
         now = rclpy.time.Time()
         try:
@@ -170,6 +180,7 @@ class ArmController(Node):
             position = np.array([position.x, position.y, position.z])
             orientation = np.array([orientation.x, orientation.y, orientation.z, orientation.w])
             self.camera2base_Matrix = self.quat2matrix(orientation, position)
+            self.aruco_update = False
             # print("camera2base updated")
         except :
             print("pass")
@@ -186,7 +197,11 @@ class ArmController(Node):
         self.marker2camera_Matrix = matrix
         # print("camera2marker matrix: ", self.marker2camera_Matrix)
 
-        self.marker2base_Matrix = np.dot(self.camera2base_Matrix, np.dot(self.rot_matrix2, np.dot(self.marker2camera_Matrix, self.rot_matrix1)))
+        #self.marker2base_Matrix = np.dot(self.camera2base_Matrix, np.dot(self.rot_matrix2, np.dot(self.marker2camera_Matrix, self.rot_matrix1)))
+        
+        self.marker2base_Matrix = np.matmul(np.matmul(self.camera2base_Matrix, self.rot_matrix2), self.marker2camera_Matrix)
+        self.marker2base_Matrix = np.matmul(self.marker2base_Matrix, self.rot_matrix1)
+
         # print('base2marker matrix:', self.base2marker_Matrix)
         #print('m1 ', self.marker2camera_Matrix)
         #print('m2 ', self.camera2base_Matrix)
@@ -194,9 +209,15 @@ class ArmController(Node):
 
 
     def pickup_cb(self):
-        # print('timers callback')
+        print('pickup, action:',self.action)
+        if self.action == False:
+            self.pickup_timer.destroy()
+            return
+        else:
+            pass
+
         if len(self.joint_pos) == 7:
-            # print(self.machine_state)
+            print(self.machine_state)
             match self.machine_state:
                 case "INIT":
                     self.pantil_deg_cmd.pitch = 10.0  # 调整云台俯仰角
@@ -204,7 +225,8 @@ class ArmController(Node):
                     self.pantil_deg_cmd.speed = 10
                     self.pantil_pub.publish(self.pantil_deg_cmd)
                     if self.go_sleep_pos() == True and self.release():
-                        print('go slep pos done!')
+                        print('Go slep pos done!')
+                        self.aruco_update = True
 
                         # print('base2marker_Matrix: ', self.base2marker_Matrix)
                         if np.array_equal(self.marker2base_Matrix, np.eye(4)):
@@ -223,48 +245,71 @@ class ArmController(Node):
                         print('NEXT0 control done!')
                         self.machine_state = "NEXT1"
                 
-                # case "NEXT1":
-                #     if self.set_group_pos([0.0, 0.0, -1.0, 0.0]) == True:
-                #         print('NEXT1 control done!')
-                #         self.machine_state = "NEXT2"
-                        
                 case "NEXT1":
-                    height_Matrix = np.array([[1, 0, 0, 0],
-                                     [0, 1, 0, 0],
-                                     [0, 0, 1, 0.1],
-                                     [0, 0, 0, 1]])
-                    mlist, mflag = self.matrix_control(np.dot(self.marker2base_Matrix, height_Matrix))
-                    self.fk = self.joint_to_pose(mlist)
-                    np.set_printoptions(precision=3)
-                    # print('fk', self.fk)
-                    print('mlist:', mlist)
-                    error = self.marker2base_Matrix - self.fk
-                    # error = np.random.random(4)
-                    np.set_printoptions(precision=3)
-                    print('error: ', error)
-                    # if mflag == True and self.release():
-                    if self.set_group_pos([mlist[0], mlist[1], mlist[2], mlist[3]]) and self.release():
-                        print('NEXT1 done!')
-                        # time.sleep(3.0)
-                        self.grasp(0.7)
+                    if self.set_group_pos([0.0, 0.0, -1.0, 0.5]) == True:
+                        print('NEXT1 control done!')
                         self.machine_state = "NEXT2"
-                        time.sleep(1.0)
+       
+                # case "NEXT1":
+                #     # print('m2c: ', self.marker2camera_Matrix)
+                #     # print('c2b: ', self.camera2base_Matrix)
+                #     height_Matrix = np.array([[1, 0, 0, 0],
+                #                               [0, 1, 0, 0],
+                #                               [0, 0, 1, 0.05],
+                #                               [0, 0, 0, 1]])
+                #     m1 = np.dot(self.marker2base_Matrix, height_Matrix)
+                #     # m2 = np.matmul(self.marker2base_Matrix, height_Matrix)
+                #     print('m2b: ', self.marker2base_Matrix)
+                #     # print('m2b1: ', m1)
+                #     # print('m2b2: ', m2)
+                #     mlist, mflag = self.matrix_control(m1)
+                #     self.fk = self.joint_to_pose(mlist)
+                #     np.set_printoptions(precision=3)
+                #     # print('fk', self.fk)
+                #     print('mlist1:', mlist)
+                #     error = self.marker2base_Matrix - self.fk
+                #     # error = np.random.random(4)
+                #     np.set_printoptions(precision=3)
+                #     print('error1: ', error)
+                #     if mflag:
+                #         self.aruco_update = False
+                #     else:
+                #         print('false,direct 1 to 3')
+                #         self.machine_state = "NEXT3"
+
+                #     # if mflag == True and self.release():
+                #     # 如果是false，解不出来，mlist就会出问题。机械臂会乱跑。
+                #     if self.set_group_pos([mlist[0], mlist[1], mlist[2], mlist[3]]) and self.release():
+                #         print('NEXT1 control done!')
+                #         # time.sleep(3.0)
+                #         #self.grasp(0.7)
+                #         self.machine_state = "NEXT2"
+                #         time.sleep(1.0)
 
                 case "NEXT2":
+                    np.set_printoptions(precision=3)
                     print('base2marker_Matrix: ', self.marker2base_Matrix)
-
+                    # print('m2c: ', self.marker2camera_Matrix)
+                    # print('c2b: ', self.camera2base_Matrix)
                     mlist, mflag = self.matrix_control(self.marker2base_Matrix)
                     self.fk = self.joint_to_pose(mlist)
                     np.set_printoptions(precision=3)
                     # print('fk', self.fk)
-                    print('mlist:', mlist)
-                    error = self.marker2base_Matrix - self.fk
-                    # error = np.random.random(4)
+                    # print('mlist2:', mlist)
+                    # error = self.marker2base_Matrix - self.fk
                     np.set_printoptions(precision=3)
-                    print('error: ', error)
-                    # if mflag == True and self.release():
-                    if self.set_group_pos([mlist[0], mlist[1], mlist[2], mlist[3]]) and self.release():
-                        print('matrix control done!')
+                    # print('error2: ', error)
+                    if not mflag:
+                        print('false,direct 2 to 3')
+                        # self.machine_state = "NEXT3"
+                        # self.aruco_update = True
+                    else:
+                        # self.aruco_update = False
+                        pass
+                          
+                    if mflag and self.release():
+                    # if self.set_group_pos([mlist[0], mlist[1], mlist[2], mlist[3]]) and self.release():
+                        print('NEXT2 control done!')
                         # time.sleep(3.0)
                         self.grasp(0.7)
                         self.machine_state = "NEXT3"
@@ -277,7 +322,7 @@ class ArmController(Node):
                         # time.sleep(3.0)
                 case "NEXT4":
                     if self.go_sleep_pos() == True:
-                        print('NEXT4 control done!')
+                        print('Go sleep pos done!')
                         # self.release()
                         self.machine_state = "NEXT6"
                         time.sleep(1.0)
@@ -299,11 +344,22 @@ class ArmController(Node):
                         print('NEXT6 control done!')
                         self.machine_state = "over"
                         time.sleep(3.0)
-
+                        
+                case "TEST":
+                    # if self.set_group_pos([0.014, 5.725, 0.613, 0.036]) == True:
+                    if self.set_group_pos([0.014, 0.025, 0.013, 0.036]) == True:
+                        self.machine_state = "over"
         pass
 
 
     def place_cb(self):  # 卡不可能在这里面卡
+        print('place, action: ',self.action)
+        if self.action == True:
+            self.place_timer.destroy()
+            return
+        else:
+            pass
+
         if len(self.joint_pos) == 7:
             match self.machine_state:
                 case "INIT":
@@ -317,7 +373,9 @@ class ArmController(Node):
                 case "NEXT1":
                     if self.go_sleep_pos() == True:
                         print('Go sleep pos done!')
-                        print('place is done')
+                        self.machine_state = "EXIT"  
+                case 'EXIT':
+                    return
         pass    
 
 
@@ -392,16 +450,12 @@ class ArmController(Node):
                     else:
                         if np.abs(pos_list[0] - check_pos[0]) >= thred:
                             pass
-                            # print('waist moving...')
                         if np.abs(pos_list[1] - check_pos[1]) >= thred:
                             pass
-                            # print('shoulder moving...')
                         if np.abs(pos_list[2] - check_pos[2]) >= thred:
                             pass
-                            # print('elbow moving...')
                         if np.abs(pos_list[3] - check_pos[3]) >= thred:
                             pass
-                            # print('wrist moving...')
                             return False            
             pass
 
@@ -432,8 +486,8 @@ class ArmController(Node):
                 M=self.robot_des.M,
                 T=T_sd,
                 thetalist0=guess,
-                eomg=1.0,
-                ev=0.005,
+                eomg=100.0,
+                ev=0.02,
             )
             solution_found = True
             print('success: ',success)
