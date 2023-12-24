@@ -7,11 +7,11 @@
 ### 屏幕显示
 
 ```bash
-tony@iqr-turtlebot4-121:~$ sudo systemctl stop gdm3
+sudo systemctl stop gdm3
 ```
 
 ```bash
-tony@iqr-turtlebot4-121:~$ sudo /etc/NX/nxserver --restart
+sudo /etc/NX/nxserver --restart
 ```
 
 <img width="1440" alt="image" src="https://github.com/HuaYuXiao/tb4_find_pickup_place/assets/117464811/57fc1409-7d51-4a97-903b-279116c6501c">
@@ -27,13 +27,13 @@ tony@iqr-turtlebot4-121:~$ sudo /etc/NX/nxserver --restart
 ### 启动接口
 
 ```bash
-tony@iqr-turtlebot4-121:~$ ros2 launch iqr_tb4_bringup bringup.launch.py
+ros2 launch iqr_tb4_bringup bringup.launch.py
 ```
 
 ### 相机识别marker
 
 ```bash
-tony@iqr-turtlebot4-121:~$ ros2 launch ros2_aruco aruco_recognition.launch.py
+ros2 launch ros2_aruco aruco_recognition.launch.py
 ```
 
 ### 加载地图
@@ -41,19 +41,19 @@ tony@iqr-turtlebot4-121:~$ ros2 launch ros2_aruco aruco_recognition.launch.py
 Open a terminal and launch `rviz2`:
 
 ```bash
-tony@iqr-turtlebot4-121:~$ rviz2
+rviz2
 ```
 
 Then, in another terminal, launch `map_server`:
 
 ```bash
-tony@iqr-turtlebot4-121:~$ ros2 run nav2_map_server map_server --ros-args -p yaml_filename:=map.yaml
+ros2 run nav2_map_server map_server --ros-args -p yaml_filename:=map.yaml
 ```
 
 Then, in another terminal, launch `lifecycle_bringup`:
 
 ```bash
-tony@iqr-turtlebot4-121:~$ ros2 run nav2_util lifecycle_bringup map_server
+ros2 run nav2_util lifecycle_bringup map_server
 ```
 
 ![image](https://github.com/HuaYuXiao/turtlebot2_pickup_and_place/assets/117464811/16008ebc-f038-4634-a5e8-1883e577c0b6)
@@ -66,19 +66,19 @@ tony@iqr-turtlebot4-121:~$ ros2 run nav2_util lifecycle_bringup map_server
 Open a terminal and launch `localization`:
 
 ```bash
-tony@iqr-turtlebot4-121:~$ ros2 launch turtlebot4_navigation localization.launch.py map:=map.yaml
+ros2 launch turtlebot4_navigation localization.launch.py map:=map.yaml
 ```
 
 Then, in another terminal, launch `nav2`:
 
 ```bash
-tony@iqr-turtlebot4-121:~$ ros2 launch turtlebot4_navigation nav2.launch.py
+ros2 launch turtlebot4_navigation nav2.launch.py
 ```
 
 In a new terminal launch `Rviz` so that you can view the map and interact with navigation:
 
 ```bash
-tony@iqr-turtlebot4-121:~$ ros2 launch turtlebot4_viz view_robot.launch.py
+ros2 launch turtlebot4_viz view_robot.launch.py
 ```
 
 ![image](https://github.com/HuaYuXiao/tb4_find_pickup_place/assets/117464811/ac469303-28e1-4fce-a1a9-4304e864e7ec)
