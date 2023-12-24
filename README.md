@@ -106,4 +106,13 @@ The `Nav2 Goal` tool allows you to set a goal pose for the robot.
 
 ## 团队贡献
 
+## Citations
 
+```bibtex
+@InProceedings{macenski2020marathon2,
+author = {Macenski, Steven and Martin, Francisco and White, Ruffin and Ginés Clavero, Jonatan},
+title = {The Marathon 2: A Navigation System},
+booktitle = {2020 IEEE/RSJ International Conference on Intelligent Robots and Systems (IROS)},
+year = {2020}
+}
+```
