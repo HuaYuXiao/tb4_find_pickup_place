@@ -2,27 +2,30 @@ from define import *
 
 
 def main():
+    qA = quaternion_from_euler(0.0, 0.0, np.deg2rad(-90.0))
+    PointA = PoseStamped(
+        header=Header(frame_id='map'),
+        pose=Pose(
+            position=Point(x=0.25, y=-3.3, z=0.0),
+            orientation=Quaternion(x=qA[0], y=qA[1], z=qA[2], w=qA[3])
+        )
+    )
+
+    qB = quaternion_from_euler(0.0, 0.0, np.deg2rad(0.0))
+    PointB = PoseStamped(
+        header=Header(frame_id='map'),
+        pose=Pose(
+            position=Point(x=2.85, y=-3.45, z=0.0),
+            orientation=Quaternion(x=qB[0], y=qB[1], z=qB[2], w=qB[3])
+        )
+    )
+
+    qS = quaternion_from_euler(0.0, 0.0, np.deg2rad(-90.0))  
     PointS = PoseStamped(
         header=Header(frame_id='map'),
         pose=Pose(
             position=Point(x=0.25, y=-0.3, z=0.0),
-            orientation=Quaternion(x=0.0, y=0.0, z=0.0, w=1.0)
-        )
-    )
-
-    PointA = PoseStamped(
-        header=Header(frame_id='map'),
-        pose=Pose(
-            position=Point(x=0.2, y=-3.2, z=0.0),
-            orientation=Quaternion(x=0.0, y=0.0, z=0.0, w=1.0)
-        )
-    )
-
-    PointB = PoseStamped(
-        header=Header(frame_id='map'),
-        pose=Pose(
-            position=Point(x=2.85, y=-3.25, z=0.0),
-            orientation=Quaternion(x=0.0, y=0.0, z=0.0, w=1.0)
+            orientation=Quaternion(x=qS[0], y=qS[1], z=qS[2], w=qS[3])
         )
     )
 
@@ -47,10 +50,10 @@ def main():
 
 
     ### 抓取物块 ###
-    # pickup = Thread(target=arm_thread, args=(controller, True))
-    # pickup.start()
-    # # 等待导航线程完成
-    # pickup.join()
+    pickup = Thread(target=arm_thread, args=(controller, True))
+    pickup.start()
+    # 等待导航线程完成
+    pickup.join()
 
 
     ### 前往B点 ###
