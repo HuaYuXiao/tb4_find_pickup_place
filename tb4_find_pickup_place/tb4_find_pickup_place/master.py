@@ -13,7 +13,7 @@ import modern_robotics as mr
 from interbotix_xs_modules.xs_robot import mr_descriptions as mrd
 from scipy.spatial.transform import Rotation as R
 from math import radians
-import array
+import datetime
 from tf2_ros.buffer import Buffer
 from geometry_msgs.msg import PoseArray
 from pan_tilt_msgs.msg import PanTiltCmdDeg
@@ -55,10 +55,7 @@ class Pickup(Node):
         self.marker2camera_Matrix = np.eye(4)
         self.camera2base_Matrix = np.eye(4)
         self.marker2base_Matrix = np.eye(4)
-        # self.rot_matrix1 = np.array([[1, 0, 0, -0.01],
-        #                              [0, 1, 0, 0],
-        #                              [0, 0, 1, 0],
-        #                              [0, 0, 0, 1]])
+
         self.rot_matrix1 = np.array([[0, 0, 1, 0.02],
                                      [0, 1, 0, 0.025],
                                      [-1, 0, 0, -0.02],
@@ -120,9 +117,6 @@ class Pickup(Node):
 
 
     def js_cb(self, msg):
-        # if self.pickupFlag == False or self.placeFlag == False:
-        #     return
-
         # print('joint state callback')
         if len(msg.name) == 7:
             self.joint_pos.clear()
@@ -160,16 +154,10 @@ class Pickup(Node):
         matrix = self.quat2matrix(orientation, position)
 
         self.marker2camera_Matrix = matrix
-        # print("camera2marker matrix: ", self.marker2camera_Matrix)
 
-        #self.marker2base_Matrix = np.dot(self.camera2base_Matrix, np.dot(self.rot_matrix2, np.dot(self.marker2camera_Matrix, self.rot_matrix1)))
-        
         self.marker2base_Matrix = np.matmul(np.matmul(self.camera2base_Matrix, self.rot_matrix2), self.marker2camera_Matrix)
         self.marker2base_Matrix = np.matmul(self.marker2base_Matrix, self.rot_matrix1)
 
-        # print('base2marker matrix:', self.base2marker_Matrix)
-        #print('m1 ', self.marker2camera_Matrix)
-        #print('m2 ', self.camera2base_Matrix)
         return None
 
 
@@ -177,6 +165,14 @@ class Pickup(Node):
         # print('pickup_cb')
         # print(self.joint_pos)
         if len(self.joint_pos) == 7:
+            # 获取当前时间
+            current_time = datetime.datetime.now()
+            duration = current_time - start_time
+            print(current_time, duration)
+            if duration > datetime.timedelta(seconds=40):
+                print('Time out! Forced exit!')
+                print(1/0)
+
             print(self.machine_state)
             match self.machine_state:
                 case "INIT":
@@ -213,42 +209,6 @@ class Pickup(Node):
                         print('NEXT1 control done!')
                         self.machine_state = "NEXT2"
     
-                # case "NEXT1":
-                #     # print('m2c: ', self.marker2camera_Matrix)
-                #     # print('c2b: ', self.camera2base_Matrix)
-                #     height_Matrix = np.array([[1, 0, 0, 0],
-                #                               [0, 1, 0, 0],
-                #                               [0, 0, 1, 0.05],
-                #                               [0, 0, 0, 1]])
-                #     m1 = np.dot(self.marker2base_Matrix, height_Matrix)
-                #     # m2 = np.matmul(self.marker2base_Matrix, height_Matrix)
-                #     print('m2b: ', self.marker2base_Matrix)
-                #     # print('m2b1: ', m1)
-                #     # print('m2b2: ', m2)
-                #     mlist, mflag = self.matrix_control(m1)
-                #     self.fk = self.joint_to_pose(mlist)
-                #     np.set_printoptions(precision=3)
-                #     # print('fk', self.fk)
-                #     print('mlist1:', mlist)
-                #     error = self.marker2base_Matrix - self.fk
-                #     # error = np.random.random(4)
-                #     np.set_printoptions(precision=3)
-                #     print('error1: ', error)
-                #     if mflag:
-                #         self.aruco_update = False
-                #     else:
-                #         print('false,direct 1 to 3')
-                #         self.machine_state = "NEXT3"
-
-                #     # if mflag == True and self.release():
-                #     # 如果是false，解不出来，mlist就会出问题。机械臂会乱跑。
-                #     if self.set_group_pos([mlist[0], mlist[1], mlist[2], mlist[3]]) and self.release():
-                #         print('NEXT1 control done!')
-                #         # time.sleep(3.0)
-                #         #self.grasp(0.7)
-                #         self.machine_state = "NEXT2"
-                #         time.sleep(1.0)
-
                 case "NEXT2":
                     np.set_printoptions(precision=3)
                     print('base2marker_Matrix: ', self.marker2base_Matrix)
@@ -261,26 +221,13 @@ class Pickup(Node):
                     print('fk', self.fk)
                     # error = self.marker2base_Matrix - self.fk
                     np.set_printoptions(precision=3)
-                    # print('error2: ', error)
-                    # if not mflag:
-                    #     print('false,direct 2 to 3')
-                    #     # self.machine_state = "NEXT3"
-                    #     # self.aruco_update = True
-                    # else:
-                    #     # self.aruco_update = False
-                    #     pass
-                        
-                    # if mflag and self.release():
+
                     if self.set_group_pos([mlist[0], mlist[1], mlist[2], mlist[3]]) and self.release():
                         print('NEXT2 control done!')
                         # time.sleep(3.0)
                         self.grasp(0.7)
                         self.machine_state = "NEXT3"
                         time.sleep(1.0)
-                    # if mflag and self.release():
-                    #     self.grasp(0.7)
-                    #     self.machine_state = "NEXT3"
-                    #     time.sleep(1.0)
                 
                 case "NEXT3":
                     if self.set_group_pos([0.0, -0.2, 0.0, -1.2]) == True:
@@ -299,44 +246,6 @@ class Pickup(Node):
                     print(1/0)
                     return
                         
-
-                # case "NEXT5": # 循环模式，一直识别，跟随marker，有点卡
-                #     print('base2marker_Matrix: ', self.marker2base_Matrix)
-
-                #     mlist, mflag = self.matrix_control(self.marker2base_Matrix)
-                #     self.fk = self.joint_to_pose(mlist)
-                #     # print('fk', self.fk)
-                #     # print('mlist:', mlist)
-                #     if mflag == True and self.release():
-                #         # print('matrix control done!')
-                #         self.machine_state = "NEXT5"
-                #         # time.sleep(3.0)
-                        
-                # case "NEXT6":
-                #     if self.go_home_pos() and self.release() == True:
-                #         print('NEXT6 control done!')
-                #         self.machine_state = "over"
-                #         time.sleep(3.0)
-                        
-                case "TEST1":
-                    # if self.set_group_pos([0.014, 5.725, 0.613, 0.036]) == True:
-                    if self.set_group_pos([-0.103, -0.1 ,   0.,     0.   ]) == True:
-                        self.machine_state = "over"
-
-                case "TEST2":
-                    T_sd = np.array([[ 0.99911196, -0.03122706, -0.028287  ,  0.26839074],
-                                    [ 0.03180284,  0.99929125,  0.020139  , -0.03359414],
-                                    [ 0.02763807, -0.02102072,  0.99939695,  0.28844533],
-                                    [ 0.        ,  0.        ,  0.        ,  1.        ]])
-
-                    mlist, mflag = self.matrix_control(T_sd) # inverse
-                    self.fk = self.joint_to_pose(mlist) # 由关节量算正运动学
-                    print('fk', self.fk) # self.fk应该和T_sd差的不多
-                    print('mlist:', mlist)
-                    if mflag == True and self.release():
-                        print('matrix control done!')
-                        self.machine_state = "NEXT4"
-                        time.sleep(3.0)
         pass
 
 
@@ -442,31 +351,6 @@ class Pickup(Node):
             initial_guesses = [custom_guess]
 
         for guess in initial_guesses:
-        #     theta_list, success = mr.IKinSpace(
-        #         Slist=self.robot_des.Slist,
-        #         M=self.robot_des.M,
-        #         T=T_sd,
-        #         thetalist0=guess,
-        #         eomg=5.0,
-        #         ev=0.02,
-        #     )
-        #     solution_found = True
-        #     print('success: ',success)
-        #     # Check to make sure a solution was found and that no joint limits were violated
-        #     if success:
-        #         print('success',success)
-        #         theta_list = self._wrap_theta_list(theta_list)
-        #         # solution_found = self._check_joint_limits(theta_list)
-        #         solution_found = True
-        #     else:
-        #         solution_found = False
-
-        #     if solution_found:
-        #         if execute:
-        #             joint_list = [theta_list[0],theta_list[1],theta_list[2], theta_list[3]]
-        #             self.set_group_pos(joint_list)
-        #             self.T_sb = T_sd
-        #         return theta_list, True
 
             thetalist = np.array(guess).copy()
             i = 0
@@ -476,15 +360,16 @@ class Pickup(Node):
             print(err)
             step = 0.005
             while sum(abs(err)) > 0.01 and i < maxiterations:
-                if abs(err[0]) > 0.01:
+                if abs(err[0]) > 0.005:
                     if err[0] < 0:
                         if thetalist[2] < 0:
-                            thetalist = thetalist + np.array([0.0, step, -step, 0.0])
+                            if thetalist[1] < 0.9:
+                                thetalist = thetalist + np.array([0.0, step, -step, 0.0])
                         else:
                             thetalist = thetalist + np.array([0.0, 0.0, -step, step])
                     else:
                         thetalist = thetalist - np.array([0.0, 0.0, -step, step])
-                if abs(err[2]) > 0.01:
+                if abs(err[2]) > 0.005:
                     if err[2] < 0:
                         thetalist = thetalist + np.array([0.0, 0.0, -step, -step])
                     else:
@@ -1343,10 +1228,10 @@ def main():
 
     # 创建导航器并等待其激活
     navigator = BasicNavigator()
-    # navigator.waitUntilNav2Active()
+    navigator.waitUntilNav2Active()
 
 
-    # ### 前往S点 ###
+    ### 前往S点 ###
     navigator.goToPose(PointS)
     while not navigator.isTaskComplete():
         feedback = navigator.getFeedback()
@@ -1366,7 +1251,7 @@ def main():
         print('Goal has an invalid return status!')
 
 
-    # ### 前往A点 ###
+    ### 前往A点 ###
     navigator.goToPose(PointA)
     while not navigator.isTaskComplete():
         feedback = navigator.getFeedback()
@@ -1386,12 +1271,13 @@ def main():
         print('Goal has an invalid return status!')
 
 
-    move = Move()
-    move_thread = Thread(target=spin, args=(move,))
-    move_thread.start()
-    move_thread.join()
+    # move = Move()
+    # move_thread = Thread(target=spin, args=(move,))
+    # move_thread.start()
+    # move_thread.join()
 
-
+    global start_time
+    start_time = datetime.datetime.now()
     pickup = Pickup()
     pickup_thread = Thread(target=spin, args=(pickup,))
     pickup_thread.start()
