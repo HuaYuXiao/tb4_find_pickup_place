@@ -2,6 +2,10 @@
 
 南方科技大学课程《EE211机器人感知与智能》期末项目
 
+## Video on YouTube
+
+https://youtu.be/WrTMsvBozTE
+
 ## 基本指令
 
 ### 屏幕显示
@@ -42,31 +46,6 @@ ros2 run teleop_twist_keyboard teleop_twist_keyboard
 ros2 launch ros2_aruco aruco_recognition.launch.py
 ```
 
-### 加载地图
-
-Open a terminal and launch `rviz2`:
-
-```bash
-rviz2
-```
-
-Then, in another terminal, launch `map_server`:
-
-```bash
-ros2 run nav2_map_server map_server --ros-args -p yaml_filename:=map.yaml
-```
-
-Then, in another terminal, launch `lifecycle_bringup`:
-
-```bash
-ros2 run nav2_util lifecycle_bringup map_server
-```
-
-![image](https://github.com/HuaYuXiao/turtlebot2_pickup_and_place/assets/117464811/16008ebc-f038-4634-a5e8-1883e577c0b6)
-
-参考教程：
-- https://blog.csdn.net/m0_65304012/article/details/128303733
-
 ### 定位导航
 
 Open a terminal and launch `localization`:
@@ -103,14 +82,42 @@ The `Nav2 Goal` tool allows you to set a goal pose for the robot.
 - https://github.com/turtlebot/turtlebot4_tutorials
 - https://fishros.org.cn/forum/topic/303/ros2-%E5%9F%BA%E7%A1%80-navigation2%E5%AF%BC%E8%88%AA%E7%B3%BB%E7%BB%9F
 
+### 加载地图
+
+Open a terminal and launch `rviz2`:
+
+```bash
+rviz2
+```
+
+Then, in another terminal, launch `map_server`:
+
+```bash
+ros2 run nav2_map_server map_server --ros-args -p yaml_filename:=map.yaml
+```
+
+Then, in another terminal, launch `lifecycle_bringup`:
+
+```bash
+ros2 run nav2_util lifecycle_bringup map_server
+```
+
+![image](https://github.com/HuaYuXiao/turtlebot2_pickup_and_place/assets/117464811/16008ebc-f038-4634-a5e8-1883e577c0b6)
+
+参考教程：
+- https://blog.csdn.net/m0_65304012/article/details/128303733
+
 ### 重启底盘
 
 ![image](https://github.com/HuaYuXiao/tb4_find_pickup_place/assets/117464811/94fc7bf5-0afc-49b5-aeec-12b42cc0d708)
 
 
-
-
 ## 团队贡献
+
+岳翼遥：相机识别Marker
+施永祺：机械臂逆运动学
+华羽霄：全局导航，角度位置微调
+
 
 ## Citations
 
