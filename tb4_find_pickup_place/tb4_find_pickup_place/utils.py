@@ -369,7 +369,7 @@ class Spin(Node):
                                      [0, -1, 0, 0],
                                      [0, 0, 0, 1]])
         
-        self.marker_sub = self.create_subscription(PoseArray,"/aruco_poses",self.ar_cb, 10)
+        self.marker_sub = self.create_subscription(PoseArray,"/aruco_poses", self.ar_cb, 10)
         self.tf_buffer = Buffer()
         self.tf_listener = TransformListener(self.tf_buffer, self)
 
@@ -420,7 +420,6 @@ class Spin(Node):
             position = np.array([position.x, position.y, position.z])
             orientation = np.array([orientation.x, orientation.y, orientation.z, orientation.w])
             self.camera2base_Matrix = self.quat2matrix(orientation, position)
-            self.aruco_update = False
             # print("camera2base updated")
         except :
             print("pass")
@@ -446,33 +445,34 @@ class Spin(Node):
         print(np.deg2rad(10.0))
         
         # 调整云台俯仰角
-        self.pantil_deg_cmd.pitch = 15.0  
+        self.pantil_deg_cmd.pitch = 20.0  
         self.pantil_deg_cmd.yaw = 0.0
         self.pantil_deg_cmd.speed = 10
         self.pantil_pub.publish(self.pantil_deg_cmd)
 
         # 检查是否找到物块
         if np.array_equal(self.marker2base_Matrix, np.eye(4)):
-            print('no marker detected!')
-            self.move_cmd.angular.z = 0.3
+            print('No marker detected!')
+            self.move_cmd.angular.z = 0.1
             self.cmd_pub.publish(self.move_cmd)
         else:
+            print('Marker detected!')
             relative = [self.marker2base_Matrix[0,3], 
                         self.marker2base_Matrix[1,3]]
             angle = np.arctan2(relative[1], relative[0])
             print('position: ', relative, 'angle: ', angle)
-            print(np.deg2rad(10.0))
+
             # 判断是否足够接近物块
-            if abs(angle) < np.deg2rad(10.0):
-                self.move_cmd.linear.x = 0.0
-                self.move_cmd.linear.y = 0.0
+            if abs(angle) < np.deg2rad(5.0):
+                self.move_cmd.angular.z = 0.0
                 self.cmd_pub.publish(self.move_cmd)
                 # self.place_timer.destroy()
                 print(1/0)
                 return
             else:
-                # let's turn at 0 radians/s
-                self.move_cmd.angular.z = 0.3
+                z = angle / 3
+                self.move_cmd.angular.z = z
+                print('z: ', z)
                 self.cmd_pub.publish(self.move_cmd)
 
 
