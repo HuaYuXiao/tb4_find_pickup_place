@@ -34,7 +34,7 @@ sudo /etc/NX/nxserver --restart
 ros2 launch iqr_tb4_bringup bringup.launch.py
 ```
 
-## 键盘控制
+### 键盘控制
 
 ```bash
 ros2 run teleop_twist_keyboard teleop_twist_keyboard
