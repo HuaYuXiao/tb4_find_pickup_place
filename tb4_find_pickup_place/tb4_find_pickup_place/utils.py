@@ -359,8 +359,8 @@ class Spin(Node):
         self.camera2base_Matrix = np.eye(4)
         self.marker2base_Matrix = np.eye(4)
 
-        self.rot_matrix1 = np.array([[0, 0, 1, 0],
-                                     [0, 1, 0, 0],
+        self.rot_matrix1 = np.array([[0, 0, 1, 0.02],
+                                     [0, 1, 0, 0.032],
                                      [-1, 0, 0, 0],
                                      [0, 0, 0, 1]])
         
@@ -442,10 +442,9 @@ class Spin(Node):
 
     def spin_cb(self):
         print('spin_cb', self.marker2base_Matrix)
-        print(np.deg2rad(10.0))
         
         # 调整云台俯仰角
-        self.pantil_deg_cmd.pitch = 20.0  
+        self.pantil_deg_cmd.pitch = 10.0  
         self.pantil_deg_cmd.yaw = 0.0
         self.pantil_deg_cmd.speed = 10
         self.pantil_pub.publish(self.pantil_deg_cmd)
@@ -453,7 +452,7 @@ class Spin(Node):
         # 检查是否找到物块
         if np.array_equal(self.marker2base_Matrix, np.eye(4)):
             print('No marker detected!')
-            self.move_cmd.angular.z = 0.1
+            self.move_cmd.angular.z = 0.3
             self.cmd_pub.publish(self.move_cmd)
         else:
             print('Marker detected!')
@@ -466,7 +465,7 @@ class Spin(Node):
             if abs(angle) < np.deg2rad(5.0):
                 self.move_cmd.angular.z = 0.0
                 self.cmd_pub.publish(self.move_cmd)
-                # self.place_timer.destroy()
+                self.spin_timer.destroy()
                 print(1/0)
                 return
             else:
@@ -484,8 +483,8 @@ class Move(Node):
         self.camera2base_Matrix = np.eye(4)
         self.marker2base_Matrix = np.eye(4)
 
-        self.rot_matrix1 = np.array([[0, 0, 1, 0],
-                                     [0, 1, 0, 0],
+        self.rot_matrix1 = np.array([[0, 0, 1, 0.02],
+                                     [0, 1, 0, 0.032],
                                      [-1, 0, 0, 0],
                                      [0, 0, 0, 1]])
         
@@ -568,7 +567,7 @@ class Move(Node):
         print('move_cb', self.marker2base_Matrix)
 
         # 调整云台俯仰角
-        self.pantil_deg_cmd.pitch = 15.0  
+        self.pantil_deg_cmd.pitch = 10.0  
         self.pantil_deg_cmd.yaw = 0.0
         self.pantil_deg_cmd.speed = 10
         self.pantil_pub.publish(self.pantil_deg_cmd)
@@ -583,18 +582,20 @@ class Move(Node):
             relative = [self.marker2base_Matrix[0,3], 
                         self.marker2base_Matrix[1,3]]
             print(relative)
+
             # 判断是否足够接近物块
-            if (relative[0] < 0.2) and (abs(relative[1]) < 0.2):
+            safe_diatance = 0.225
+            if (relative[0] < safe_diatance) and (abs(relative[1]) < safe_diatance):
                 self.move_cmd.linear.x = 0.0
                 self.move_cmd.linear.y = 0.0
                 self.cmd_pub.publish(self.move_cmd)
-                # self.place_timer.destroy()
+                self.move_timer.destroy()
                 print(1/0)
                 return
             else:
                 # let's turn at 0 radians/s
-                self.move_cmd.linear.x = relative[0] - 0.2
-                self.move_cmd.linear.y = relative[1] - 0.2
+                self.move_cmd.linear.x = relative[0] - safe_diatance
+                self.move_cmd.linear.y = relative[1] - safe_diatance
                 self.cmd_pub.publish(self.move_cmd)
 
 
@@ -606,8 +607,8 @@ class Pickup(Node):
         self.marker2base_Matrix = np.eye(4)
 
         self.rot_matrix1 = np.array([[0, 0, 1, 0.02],
-                                     [0, 1, 0, 0.025],
-                                     [-1, 0, 0, -0.02],
+                                     [0, 1, 0, 0.032],
+                                     [-1, 0, 0, 0],
                                      [0, 0, 0, 1]])
         
         self.rot_matrix2 = np.array([[0, 0, 1, 0],
@@ -688,8 +689,8 @@ class Pickup(Node):
             position = np.array([position.x, position.y, position.z])
             orientation = np.array([orientation.x, orientation.y, orientation.z, orientation.w])
             self.camera2base_Matrix = self.quat2matrix(orientation, position)
-            self.aruco_update = False
-            # print("camera2base updated")
+            # self.aruco_update = False
+            print("aruco updated")
         except :
             print("pass")
             pass
@@ -731,6 +732,7 @@ class Pickup(Node):
                     self.pantil_deg_cmd.yaw = 0.0
                     self.pantil_deg_cmd.speed = 10
                     self.pantil_pub.publish(self.pantil_deg_cmd)
+                    self.aruco_update = True
                     if self.go_sleep_pos() == True and self.release():
                         print('Go slep pos done!')
                         self.aruco_update = True
@@ -748,15 +750,17 @@ class Pickup(Node):
                             # time.sleep(3.0)
 
                 case "NEXT0":
-                    if self.set_group_pos([-1.0, 0.0, 0.8, -1.4]) == True:
+                    if self.set_group_pos([-1.0, 0.0, 0.8, -1.3]) == True:
                         print('NEXT0 control done!')
                         # self.machine_state = "NEXT1"
                         self.machine_state = "NEXT1"
                         #self.machine_state = "TEST1"
+                        print('aruco: ', self.marker2base_Matrix)
+                        self.aruco_update = False
                 
                 case "NEXT1":
                     angle = np.arctan2(self.marker2base_Matrix[1, 3], self.marker2base_Matrix[0, 3])
-                    if self.set_group_pos([angle, -0.3, 0.8, -1.4]) == True:
+                    if self.set_group_pos([angle, -0.3, 0.8, -1.3]) == True:
                         print('NEXT1 control done!')
                         self.machine_state = "NEXT2"
     
@@ -908,28 +912,32 @@ class Pickup(Node):
             maxiterations = 400
             Tsb = mr.FKinSpace(self.robot_des.M, self.robot_des.Slist, thetalist)
             err = Tsb[0:3, 3] - T_sd[0:3, 3]
-            print(err)
+            len0 = 0.07
+            len = (err[0] ** 2 + err[1] ** 2) ** 0.5 * np.sign(err[0]) - len0
             step = 0.005
-            while sum(abs(err)) > 0.01 and i < maxiterations:
-                if abs(err[0]) > 0.005:
-                    if err[0] < 0:
+            while (err[2] > 0.005 or abs(len) > 0.005) and i < maxiterations:
+                print('err: ', err)
+                print('len: ', len)
+                if abs(len) > 0.002:
+                    if len < 0:
                         if thetalist[2] < 0:
                             if thetalist[1] < 0.9:
                                 thetalist = thetalist + np.array([0.0, step, -step, 0.0])
+                            print('strech')
                         else:
                             thetalist = thetalist + np.array([0.0, 0.0, -step, step])
                     else:
                         thetalist = thetalist - np.array([0.0, 0.0, -step, step])
-                if abs(err[2]) > 0.005:
+                if abs(err[2]) > 0.002:
                     if err[2] < 0:
                         thetalist = thetalist + np.array([0.0, 0.0, -step, -step])
                     else:
                         thetalist = thetalist - np.array([0.0, 0.0, -step, -step])
                 Tsb = mr.FKinSpace(self.robot_des.M, self.robot_des.Slist, thetalist)
                 err = Tsb[0:3, 3] - T_sd[0:3, 3]
+                len = (err[0] ** 2 + err[1] ** 2) ** 0.5 * np.sign(err[0]) - len0
                 i = i + 1
-                # print(i)
-            print('tlist', thetalist)
+                print(i)
             return thetalist, True
 
         # self.core.get_logger().warn('No valid pose could be found. Will not execute')
@@ -1057,6 +1065,3 @@ class Pickup(Node):
             elif round(theta_list[x], 3) > round(self.joint_upper_limits[x], 3):
                 theta_list[x] -= REV
         return theta_list
-
-
-
