@@ -4,7 +4,7 @@
 
 ## Video on YouTube
 
-https://youtu.be/WrTMsvBozTE
+https://youtu.be/JnZ-MSPzgaY
 
 ## 基本指令
 
@@ -41,6 +41,8 @@ ros2 run teleop_twist_keyboard teleop_twist_keyboard
 ```
 
 ### 相机识别marker
+
+注意：请确保环境照明条件良好，否则会严重影响marker识别率！
 
 ```bash
 ros2 launch ros2_aruco aruco_recognition.launch.py
