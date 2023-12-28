@@ -3,10 +3,9 @@
 南方科技大学课程《EE211机器人感知与智能》期末项目
 
 ![HitCount](https://img.shields.io/endpoint?url=https%3A%2F%2Fhits.dwyl.com%2FHuaYuXiao%2Ftb4-Navigation-and-Arm-Control.json%3Fcolor%3Dpink)
-![Static Badge](https://img.shields.io/badge/ROS-noetic-22314E?logo=ros)
+![Static Badge](https://img.shields.io/badge/ROS-humble-22314E?logo=ros)
 ![Static Badge](https://img.shields.io/badge/Ubuntu-22.04-E95420?logo=ubuntu)
 ![Static Badge](https://img.shields.io/badge/Python-3.11.5-3776AB?logo=python)
-![Static Badge](https://img.shields.io/badge/CMake-3.10.2-064F8C?logo=cmake)
 
 ## Video on YouTube
 
