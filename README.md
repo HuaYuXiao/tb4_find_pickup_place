@@ -7,6 +7,8 @@
 ![Static Badge](https://img.shields.io/badge/Ubuntu-22.04-E95420?logo=ubuntu)
 ![Static Badge](https://img.shields.io/badge/Python-3.11.5-3776AB?logo=python)
 
+在实验室环境中，从TurtleBot4无人车上搭载的RPLIDAR S3 SL-Dtof激光雷达对场地进行SLAM，之后控制无人车动态避障导航到指定区域，闭环控制环绕搜索并移动接近Aruco物块。最后采用自研的机械臂控制算法，调整到合适的姿态对物块进行抓取和摆放。
+
 ## Video on YouTube
 
 https://youtu.be/JnZ-MSPzgaY
