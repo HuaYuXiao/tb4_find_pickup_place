@@ -123,9 +123,9 @@ ros2 run nav2_util lifecycle_bringup map_server
 
 ## 团队贡献
 
-岳翼遥：相机识别Marker
-施永祺：机械臂逆运动学
-华羽霄：全局导航，角度位置微调
+- 岳翼遥：相机识别Marker
+- 施永祺：机械臂逆运动学
+- 华羽霄：全局导航，角度位置微调
 
 
 ## Citations
