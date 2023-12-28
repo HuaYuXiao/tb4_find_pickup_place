@@ -1,4 +1,4 @@
-# TurtleBot4: Find, Pickup & Place
+# TurtleBot4: Navigation and Arm Control
 
 南方科技大学课程《EE211机器人感知与智能》期末项目
 
