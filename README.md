@@ -1,6 +1,6 @@
-# TurtleBot4: Navigation and Arm Control
+# tb4 Navigation and Arm Control
 
-南方科技大学课程《EE211机器人感知与智能》期末项目
+南方科技大学课程《EE211机器人感知与智能》期末项目：TurtleBot4室内SLAM+导航+抓取
 
 ![HitCount](https://img.shields.io/endpoint?url=https%3A%2F%2Fhits.dwyl.com%2FHuaYuXiao%2Ftb4-Navigation-and-Arm-Control.json%3Fcolor%3Dpink)
 ![Static Badge](https://img.shields.io/badge/ROS-humble-22314E?logo=ros)
@@ -31,8 +31,7 @@ sudo /etc/NX/nxserver --restart
 
 ![image](https://github.com/HuaYuXiao/tb4_find_pickup_place/assets/117464811/960671c7-d6c4-4607-a8cf-beb40eb28c71)
 
-参考教程：
-
+参考：
 - https://zhuanlan.zhihu.com/p/519648451
 
 ### 启动接口
@@ -85,8 +84,7 @@ The `Nav2 Goal` tool allows you to set a goal pose for the robot.
 
 ![image](https://github.com/HuaYuXiao/tb4_find_pickup_place/assets/117464811/34afbcba-49a8-44c0-b1a3-0485682772b7)
 
-参考教程：
-
+参考：
 - https://turtlebot.github.io/turtlebot4-user-manual/tutorials/navigation.html
 - https://github.com/turtlebot/turtlebot4_tutorials
 - https://fishros.org.cn/forum/topic/303/ros2-%E5%9F%BA%E7%A1%80-navigation2%E5%AF%BC%E8%88%AA%E7%B3%BB%E7%BB%9F
@@ -113,7 +111,7 @@ ros2 run nav2_util lifecycle_bringup map_server
 
 ![image](https://github.com/HuaYuXiao/turtlebot2_pickup_and_place/assets/117464811/16008ebc-f038-4634-a5e8-1883e577c0b6)
 
-参考教程：
+参考：
 - https://blog.csdn.net/m0_65304012/article/details/128303733
 
 ### 重启底盘
